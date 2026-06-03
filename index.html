@@ -1,0 +1,123 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAPTURADOR DIARIO v3.2</title>
+<link rel="manifest" href="manifest.json">
+
+<style>
+body{font-family:Arial;background:#f3f4f6;margin:0;}
+header{background:#111827;color:white;padding:20px;text-align:center;}
+.container{max-width:1000px;margin:auto;padding:15px;}
+.card{background:white;padding:15px;border-radius:10px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;}
+input,select,textarea,button{
+ width:100%;
+ padding:10px;
+ box-sizing:border-box;
+ border-radius:6px;
+ border:1px solid #ccc;
+}
+button{
+ background:#2563eb;
+ color:white;
+ border:none;
+ cursor:pointer;
+}
+textarea{min-height:100px;}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>CAPTURADOR DIARIO v3.2</h1>
+<p>PWA instalable</p>
+</header>
+
+<div class="container">
+
+<div class="card">
+
+<div class="grid">
+
+<div>
+<label>Fecha</label>
+<input type="date" id="fecha">
+</div>
+
+<div>
+<label>Hora</label>
+<input type="time" id="hora">
+</div>
+
+<div>
+<label>Ámbito</label>
+<select id="ambito">
+<option>Trabajo</option>
+<option>Hogar</option>
+<option>Familia</option>
+<option>Bienestar</option>
+<option>Comunidad</option>
+</select>
+</div>
+
+<div>
+<label>Proyecto</label>
+<input type="text" id="proyecto">
+</div>
+
+</div>
+
+<label>Actividad</label>
+<textarea id="actividad"></textarea>
+
+<br><br>
+
+<button onclick="guardar()">Guardar entrada</button>
+
+<div id="status"></div>
+
+</div>
+
+</div>
+
+<script>
+
+const now = new Date();
+
+document.getElementById('fecha').value = now.toISOString().split('T')[0];
+document.getElementById('hora').value = now.toTimeString().slice(0,5);
+
+function guardar(){
+
+ const entrada = {
+  fecha: fecha.value,
+  hora: hora.value,
+  ambito: ambito.value,
+  proyecto: proyecto.value,
+  actividad: actividad.value
+ };
+
+ let registros = JSON.parse(localStorage.getItem('capturador_pwa') || '[]');
+
+ registros.push(entrada);
+
+ localStorage.setItem('capturador_pwa', JSON.stringify(registros));
+
+ document.getElementById('status').innerHTML =
+  '<p style="color:green;font-weight:bold;">✅ Entrada guardada</p>';
+
+ actividad.value='';
+}
+
+if('serviceWorker' in navigator){
+ navigator.serviceWorker.register('./service-worker.js');
+}
+
+</script>
+
+</body>
+</html>
