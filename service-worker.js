@@ -1,7 +1,7 @@
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open('capturador-v3-2').then(cache => {
+    caches.open('capturador-v3-3').then(cache => {
       return cache.addAll([
         './',
         './index.html',
