@@ -1,123 +1,95 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CAPTURADOR DIARIO v3.2</title>
+<title>CAPTURADOR DIARIO v3.3 OPERATIVO</title>
 <link rel="manifest" href="manifest.json">
-
 <style>
-body{font-family:Arial;background:#f3f4f6;margin:0;}
-header{background:#111827;color:white;padding:20px;text-align:center;}
-.container{max-width:1000px;margin:auto;padding:15px;}
-.card{background:white;padding:15px;border-radius:10px;}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;}
-input,select,textarea,button{
- width:100%;
- padding:10px;
- box-sizing:border-box;
- border-radius:6px;
- border:1px solid #ccc;
-}
-button{
- background:#2563eb;
- color:white;
- border:none;
- cursor:pointer;
-}
-textarea{min-height:100px;}
+body{font-family:Arial,sans-serif;background:#f3f4f6;margin:0}
+header{background:#111827;color:#fff;padding:15px;text-align:center}
+.container{max-width:1200px;margin:auto;padding:15px}
+.card{background:#fff;padding:15px;border-radius:10px;margin-bottom:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+input,select,textarea,button{width:100%;padding:10px;box-sizing:border-box;border:1px solid #ccc;border-radius:6px}
+textarea{min-height:90px}
+button{background:#2563eb;color:white;border:none;cursor:pointer}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #ddd;padding:6px;font-size:12px}
+th{background:#eee}
 </style>
 </head>
-
 <body>
-
-<header>
-<h1>CAPTURADOR DIARIO v3.2</h1>
-<p>PWA instalable</p>
-</header>
-
+<header><h1>CAPTURADOR DIARIO v3.3 OPERATIVO</h1></header>
 <div class="container">
+<div class="card">
+<div class="grid">
+<input id="fecha" type="date">
+<input id="hora" type="time">
+<select id="tipo"><option>Inicio</option><option>Fin</option><option>Evento</option></select>
+<select id="ambito"><option>Trabajo</option><option>Hogar</option><option>Familia</option><option>Bienestar</option><option>Comunidad</option></select>
+<input id="proyecto" placeholder="Proyecto">
+<input id="fase" placeholder="Fase">
+<input id="proceso" placeholder="Proceso">
+<input id="lugar" placeholder="Lugar">
+<input id="kmi" placeholder="Km inicial">
+<input id="kmf" placeholder="Km final">
+<input id="gasto" placeholder="Gasto €">
+<select id="estado"><option>Pendiente</option><option>En curso</option><option>Finalizado</option><option>Cancelado</option></select>
+<input id="personas" placeholder="Personas">
+</div>
+<p>Actividad</p><textarea id="actividad"></textarea>
+<p>Observaciones</p><textarea id="observaciones"></textarea>
+<button onclick="guardar()">Guardar entrada</button>
+<div id="msg"></div>
+</div>
 
 <div class="card">
-
-<div class="grid">
-
-<div>
-<label>Fecha</label>
-<input type="date" id="fecha">
+<h3>Últimas entradas</h3>
+<table>
+<thead><tr><th>Fecha</th><th>Proyecto</th><th>Actividad</th></tr></thead>
+<tbody id="historial"></tbody>
+</table>
 </div>
-
-<div>
-<label>Hora</label>
-<input type="time" id="hora">
-</div>
-
-<div>
-<label>Ámbito</label>
-<select id="ambito">
-<option>Trabajo</option>
-<option>Hogar</option>
-<option>Familia</option>
-<option>Bienestar</option>
-<option>Comunidad</option>
-</select>
-</div>
-
-<div>
-<label>Proyecto</label>
-<input type="text" id="proyecto">
-</div>
-
-</div>
-
-<label>Actividad</label>
-<textarea id="actividad"></textarea>
-
-<br><br>
-
-<button onclick="guardar()">Guardar entrada</button>
-
-<div id="status"></div>
-
-</div>
-
 </div>
 
 <script>
+const API="https://script.google.com/macros/s/AKfycbx0a3NeXTznEIbTQhmw23vvlWQGEnfXUq7ADG6XiprHq2fi9K1HFffzb9tGS7aaNALJfw/exec";
+const n=new Date();
+fecha.value=n.toISOString().split('T')[0];
+hora.value=n.toTimeString().slice(0,5);
 
-const now = new Date();
+async function cargar(){
+ try{
+   const r=await fetch(API);
+   const data=await r.json();
+   const tb=document.getElementById("historial");
+   tb.innerHTML="";
+   data.reverse().slice(0,20).forEach(x=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${x.Fecha||""}</td><td>${x.Proyecto||""}</td><td>${x.Actividad||""}</td>`;
+      tb.appendChild(tr);
+   });
+ }catch(e){console.log(e)}
+}
 
-document.getElementById('fecha').value = now.toISOString().split('T')[0];
-document.getElementById('hora').value = now.toTimeString().slice(0,5);
-
-function guardar(){
-
- const entrada = {
-  fecha: fecha.value,
-  hora: hora.value,
-  ambito: ambito.value,
-  proyecto: proyecto.value,
-  actividad: actividad.value
+async function guardar(){
+ const d={
+  fecha:fecha.value,hora:hora.value,tipo:tipo.value,ambito:ambito.value,
+  proyecto:proyecto.value,fase:fase.value,proceso:proceso.value,
+  actividad:actividad.value,lugar:lugar.value,kmi:kmi.value,kmf:kmf.value,
+  gasto:gasto.value,estado:estado.value,personas:personas.value,
+  observaciones:observaciones.value
  };
-
- let registros = JSON.parse(localStorage.getItem('capturador_pwa') || '[]');
-
- registros.push(entrada);
-
- localStorage.setItem('capturador_pwa', JSON.stringify(registros));
-
- document.getElementById('status').innerHTML =
-  '<p style="color:green;font-weight:bold;">✅ Entrada guardada</p>';
-
- actividad.value='';
+ try{
+   await fetch(API,{method:"POST",body:JSON.stringify(d)});
+   msg.innerHTML="✅ Entrada guardada";
+   cargar();
+ }catch(e){
+   msg.innerHTML="❌ Error al guardar";
+ }
 }
-
-if('serviceWorker' in navigator){
- navigator.serviceWorker.register('./service-worker.js');
-}
-
+cargar();
 </script>
-
 </body>
 </html>
